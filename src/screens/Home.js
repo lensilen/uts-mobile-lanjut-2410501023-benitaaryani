@@ -28,28 +28,26 @@ const CARD_WIDTH = (Dimensions.get("window").width - 48) / NUM_COLUMNS;
 function CategoryCard({ item, onPress }) {
   const scale = useRef(new Animated.Value(1)).current;
 
-  const handlePressIn = () => {
-    Animated.timing(scale, {
-      toValue: 1.08,
-      duration: 120,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.timing(scale, {
-      toValue: 1,
-      duration: 120,
-      useNativeDriver: true,
-    }).start(() => onPress(item));
+  const handlePress = () => {
+    Animated.sequence([
+      Animated.timing(scale, {
+        toValue: 1.08,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+    ]).start(() => onPress(item));
   };
 
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
       <TouchableOpacity
-        activeOpacity={1}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+        activeOpacity={0.9}
+        onPress={handlePress}
         style={styles.card}
       >
         <Image
@@ -97,6 +95,10 @@ export default function Home({ navigation }) {
     navigation.navigate("Browse", { category: item.strCategory });
   };
 
+  const handleRandomPress = () => {
+    navigation.navigate("Detail", { random: true });
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -119,8 +121,26 @@ export default function Home({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Selamat datang di</Text>
-        <Text style={styles.appName}>ResepKita</Text>
+        <View style={styles.headerLeft}>
+          <Text style={styles.greeting}>Selamat datang di</Text>
+          <Text style={styles.appName}>ResepKita</Text>
+          <Text style={styles.subtitle}>Eksplorasi cita rasa dari seluruh dunia</Text>
+        </View>
+        <View style={styles.randomBtnWrap}>
+          <Text style={styles.randomLabel}>
+            Press Here For{"\n"}Random Recipe!
+          </Text>
+          <TouchableOpacity
+            style={styles.randomBtn}
+            onPress={handleRandomPress}
+          >
+            <MaterialCommunityIcons
+              name="shuffle-variant"
+              size={28}
+              color="#fff"
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <FlatList
@@ -156,19 +176,56 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bone,
   },
   header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     paddingHorizontal: 20,
     paddingTop: 56,
     paddingBottom: 16,
   },
+  headerLeft: {
+    flex: 1,
+  },
   greeting: {
     fontSize: 14,
     color: COLORS.reseda,
-    fontFamily: "PTSerif_400Italic",
+    fontFamily: "PTSerif_400Regular",
   },
   appName: {
-    fontSize: 36,
+    fontSize: 42,
     color: COLORS.ebony,
     fontFamily: "PlayfairDisplay_700Bold",
+  },
+  subtitle: {
+    fontSize: 16,
+    color: COLORS.reseda,
+    fontFamily: "PTSerif_400Regular",
+    marginTop: 4,
+  },
+  randomBtnWrap: {
+    alignItems: "center",
+    marginTop: 16,
+    gap: 6,
+  },
+  randomBtn: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.reseda,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 4,
+    shadowColor: COLORS.ebony,
+    shadowOffset: { width: 2, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  randomLabel: {
+    fontSize: 10,
+    color: COLORS.reseda,
+    textAlign: "center",
+    fontFamily: "PTSerif_400Regular",
+    lineHeight: 14,
   },
   grid: {
     paddingHorizontal: 12,
@@ -194,15 +251,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bone,
   },
   cardLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
-    color: COLORS.bone,
+    color: "#fff",
     padding: 10,
     textAlign: "center",
     backgroundColor: COLORS.reseda,
     fontFamily: "PTSerif_700Bold",
   },
-  Text: {
+  errorText: {
     fontSize: 14,
     color: COLORS.reseda,
     marginBottom: 12,

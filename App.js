@@ -7,7 +7,6 @@ import {
 import {
   PTSerif_400Regular,
   PTSerif_700Bold,
-  PTSerif_400Italic,
 } from "@expo-google-fonts/pt-serif";
 import AppNavigator from "./src/navigation/AppNavigator";
 
@@ -16,7 +15,6 @@ export default function App() {
     PlayfairDisplay_700Bold,
     PTSerif_400Regular,
     PTSerif_700Bold,
-    PTSerif_400Italic,
   });
 
   if (!fontsLoaded) {

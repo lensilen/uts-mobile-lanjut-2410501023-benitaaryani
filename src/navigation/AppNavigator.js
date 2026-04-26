@@ -9,6 +9,8 @@ import Home from "../screens/Home";
 import Search from "../screens/Search";
 import Favorites from "../screens/Favorites";
 import About from "../screens/About";
+import Browse from '../screens/Browse';
+import Detail from '../screens/Detail';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -21,6 +23,8 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="MainTabs" component={MainTabs} />
+        <Stack.Screen name="Browse" component={Browse} />
+        <Stack.Screen name="Detail" component={Detail} />
       </Stack.Navigator>
     </NavigationContainer>
   );
