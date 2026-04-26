@@ -13,8 +13,8 @@ import About from "../screens/About";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const ACTIVE_COLOR = "#4A90D9";
-const INACTIVE_COLOR = "#aaa";
+const ACTIVE_COLOR = "#414833";
+const INACTIVE_COLOR = "#A4AC86";
 
 export default function AppNavigator() {
   return (
@@ -106,7 +106,7 @@ function TabIcon({ name, label, focused }) {
         width: focused ? 88 : 42,
         height: 44,
         borderRadius: 24,
-        backgroundColor: focused ? "#E8F1FB" : "transparent",
+        backgroundColor: focused ? "#E8EDE1" : "transparent",
         gap: focused ? 6 : 0,
         transform: [{ translateY: 12 }],
       }}
