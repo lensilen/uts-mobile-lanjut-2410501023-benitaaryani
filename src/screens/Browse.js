@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,11 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  Animated,
+  PanResponder,
+  Dimensions,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { getMealsByCategory } from "../services/api";
 
@@ -19,6 +23,85 @@ const COLORS = {
   dun: "#CCBFA3",
   bone: "#EBE3D2",
 };
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const SWIPE_THRESHOLD = 80;
+
+// Referensi: https://reactnative.dev/docs/panresponder
+// Referensi: https://reactnative.dev/docs/animated
+function SwipeableCard({ item, onSwipe }) {
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  useFocusEffect(
+    React.useCallback(() => {
+      translateX.setValue(0);
+    }, []),
+  );
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return (
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy) &&
+          gestureState.dx < 0
+        );
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dx < 0) {
+          translateX.setValue(gestureState.dx);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -SWIPE_THRESHOLD) {
+          onSwipe(item);
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        } else {
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    }),
+  ).current;
+
+  const revealOpacity = translateX.interpolate({
+    inputRange: [-SWIPE_THRESHOLD, 0],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
+  return (
+    <View style={styles.swipeContainer}>
+      <Animated.View style={[styles.revealBack, { opacity: revealOpacity }]}>
+        <Text style={styles.revealText}>Let's Cook This!</Text>
+      </Animated.View>
+
+      <Animated.View
+        style={{ transform: [{ translateX }] }}
+        {...panResponder.panHandlers}
+      >
+        <View style={styles.card}>
+          <Image
+            source={{ uri: item.strMealThumb }}
+            style={styles.cardImage}
+            resizeMode="cover"
+          />
+          <View style={styles.cardInfo}>
+            <Text style={styles.cardTitle} numberOfLines={2}>
+              {item.strMeal}
+            </Text>
+            <Text style={styles.swipeHint}>← swipe</Text>
+          </View>
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
 
 export default function Browse({ navigation, route }) {
   const { category } = route.params;
@@ -49,7 +132,7 @@ export default function Browse({ navigation, route }) {
     fetchMeals();
   };
 
-  const handleMealPress = (item) => {
+  const handleSwipe = (item) => {
     navigation.navigate("Detail", { idMeal: item.idMeal });
   };
 
@@ -75,8 +158,15 @@ export default function Browse({ navigation, route }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={COLORS.ebony} />
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backBtn}
+        >
+          <MaterialCommunityIcons
+            name="arrow-left"
+            size={24}
+            color={COLORS.ebony}
+          />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{category}</Text>
       </View>
@@ -86,22 +176,14 @@ export default function Browse({ navigation, route }) {
         keyExtractor={(item) => item.idMeal}
         contentContainerStyle={styles.list}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.ebony]} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[COLORS.ebony]}
+          />
         }
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.card} onPress={() => handleMealPress(item)}>
-            <Image
-              source={{ uri: item.strMealThumb }}
-              style={styles.cardImage}
-              resizeMode="cover"
-            />
-            <View style={styles.cardInfo}>
-              <Text style={styles.cardTitle} numberOfLines={2}>
-                {item.strMeal}
-              </Text>
-              <MaterialCommunityIcons name="chevron-right" size={20} color={COLORS.reseda} />
-            </View>
-          </TouchableOpacity>
+          <SwipeableCard item={item} onSwipe={handleSwipe} />
         )}
       />
     </View>
@@ -145,6 +227,25 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
     gap: 12,
   },
+  swipeContainer: {
+    position: "relative",
+  },
+  revealBack: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: "50%",
+    backgroundColor: COLORS.reseda,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  revealText: {
+    color: "#fff",
+    fontFamily: "PTSerif_700Bold",
+    fontSize: 14,
+  },
   card: {
     flexDirection: "row",
     backgroundColor: COLORS.bone,
@@ -174,6 +275,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.ebony,
     fontFamily: "PTSerif_700Bold",
+  },
+  swipeHint: {
+    fontSize: 12,
+    color: "#fff",
+    fontFamily: "PTSerif_400Regular",
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: COLORS.reseda,
   },
   errorText: {
     fontSize: 14,
