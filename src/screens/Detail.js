@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -28,6 +28,8 @@ export default function Detail({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [activeTab, setActiveTab] = useState("ingredients");
+  const scrollRef = useRef(null);
 
   const fetchMeal = async () => {
     try {
@@ -93,21 +95,21 @@ export default function Detail({ navigation, route }) {
           >
             <MaterialCommunityIcons name="arrow-left" size={24} color={COLORS.ebony} />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.favoriteBtn}
-            onPress={() => setIsFavorite(!isFavorite)}
-          >
-            <MaterialCommunityIcons
-              name={isFavorite ? "heart" : "heart-outline"}
-              size={24}
-              color={isFavorite ? "#E8593C" : COLORS.ebony}
-            />
-          </TouchableOpacity>
         </View>
 
         <View style={styles.content}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>{meal.strMeal}</Text>
+            <TouchableOpacity
+              style={styles.favoriteBtn}
+              onPress={() => setIsFavorite(!isFavorite)}
+            >
+              <MaterialCommunityIcons
+                name={isFavorite ? "heart" : "heart-outline"}
+                size={26}
+                color={isFavorite ? "#E8593C" : COLORS.ebony}
+              />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.metaRow}>
@@ -118,27 +120,64 @@ export default function Detail({ navigation, route }) {
             <Text style={styles.metaText}>{meal.strCategory}</Text>
           </View>
 
-          <Text style={styles.sectionTitle}>Bahan-bahan</Text>
-          <View style={styles.ingredientsList}>
-            {ingredients.map((ing, index) => (
-              <View key={index} style={styles.ingredientItem}>
-                <View style={styles.ingredientDot} />
-                <Text style={styles.ingredientText}>
-                  {ing.measure} {ing.ingredient}
-                </Text>
-              </View>
-            ))}
+          <View style={styles.tabRow}>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === "ingredients" && styles.tabActive]}
+              onPress={() => {
+                setActiveTab("ingredients");
+                scrollRef.current?.scrollTo({ x: 0, animated: true });
+              }}
+            >
+              <Text style={[styles.tabText, activeTab === "ingredients" && styles.tabTextActive]}>
+                Ingredients
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === "instructions" && styles.tabActive]}
+              onPress={() => {
+                setActiveTab("instructions");
+                scrollRef.current?.scrollTo({ x: SCREEN_WIDTH - 40, animated: true });
+              }}
+            >
+              <Text style={[styles.tabText, activeTab === "instructions" && styles.tabTextActive]}>
+                Instructions
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          <Text style={styles.sectionTitle}>Cara Memasak</Text>
-          {meal.strInstructions
-            .split("\n")
-            .filter((line) => line.trim())
-            .map((line, index) => (
-              <Text key={index} style={styles.instructions}>
-                {line.trim()}
-              </Text>
-            ))}
+          <ScrollView
+            ref={scrollRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={16}
+            onMomentumScrollEnd={(e) => {
+              const x = e.nativeEvent.contentOffset.x;
+              setActiveTab(x > (SCREEN_WIDTH - 40) / 2 ? "instructions" : "ingredients");
+            }}
+          >
+            <View style={{ width: SCREEN_WIDTH - 40 }}>
+              {ingredients.map((ing, index) => (
+                <View key={index} style={styles.ingredientItem}>
+                  <View style={styles.ingredientDot} />
+                  <Text style={styles.ingredientText}>
+                    {ing.measure} {ing.ingredient}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={{ width: SCREEN_WIDTH - 40 }}>
+              {meal.strInstructions
+                .split("\n")
+                .filter((line) => line.trim())
+                .map((line, index) => (
+                  <Text key={index} style={styles.instructions}>
+                    {line.trim()}
+                  </Text>
+                ))}
+            </View>
+          </ScrollView>
         </View>
       </ScrollView>
     </View>
@@ -175,29 +214,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 4,
   },
-  favoriteBtn: {
-    position: "absolute",
-    top: 48,
-    right: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.bone,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 4,
-  },
   content: {
-    padding: 20,
+    backgroundColor: COLORS.bone,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    marginTop: -32,
+    padding: 24,
     paddingBottom: 100,
   },
   titleRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     marginBottom: 8,
+    gap: 12,
   },
   title: {
+    flex: 1,
     fontSize: 26,
     color: COLORS.ebony,
     fontFamily: "PlayfairDisplay_700Bold",
+  },
+  favoriteBtn: {
+    marginTop: 4,
   },
   metaRow: {
     flexDirection: "row",
@@ -216,28 +255,40 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: COLORS.dun,
   },
-  sectionTitle: {
-    fontSize: 18,
-    color: COLORS.ebony,
-    fontFamily: "PlayfairDisplay_700Bold",
-    marginBottom: 12,
-    borderBottomWidth: 1.5,
-    borderBottomColor: COLORS.reseda,
-    paddingBottom: 4,
-    alignSelf: "flex-start",
+  tabRow: {
+    flexDirection: "row",
+    backgroundColor: COLORS.dun,
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 20,
   },
-  ingredientsList: {
-    marginBottom: 24,
-    gap: 8,
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  tabActive: {
+    backgroundColor: COLORS.reseda,
+  },
+  tabText: {
+    fontSize: 13,
+    color: COLORS.ebony,
+    fontFamily: "PTSerif_400Regular",
+  },
+  tabTextActive: {
+    color: "#fff",
+    fontFamily: "PTSerif_700Bold",
   },
   ingredientItem: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
+    paddingVertical: 6,
   },
   ingredientDot: {
-    width: 8,
-    height: 8,
+    width: 4,
+    height: 4,
     borderRadius: 4,
     backgroundColor: COLORS.reseda,
   },
@@ -245,6 +296,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.ebony,
     fontFamily: "PTSerif_400Regular",
+  },
+  instructionsList: {
+    gap: 10,
   },
   instructions: {
     fontSize: 14,
