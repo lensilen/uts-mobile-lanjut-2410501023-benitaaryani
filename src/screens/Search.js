@@ -8,8 +8,19 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
+  Image,
+  ActivityIndicator,
 } from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { searchMeals, getCategories, getAreaList } from "../services/api";
+
+const COLORS = {
+  ebony: "#414833",
+  reseda: "#737A5D",
+  sage: "#A4AC86",
+  dun: "#CCBFA3",
+  bone: "#EBE3D2",
+};
 
 export default function Search({ navigation }) {
   const [keyword, setKeyword] = useState("");
@@ -67,49 +78,127 @@ export default function Search({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Cari Resep</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Cari Resep</Text>
+        <Text style={styles.subtitle}>Temukan resep yang kamu inginkan</Text>
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Cari resep... (min. 3 karakter)"
-        value={keyword}
-        onChangeText={setKeyword}
-      />
+      <View style={styles.searchRow}>
+        <View style={styles.inputWrap}>
+          <MaterialCommunityIcons
+            name="magnify"
+            size={20}
+            color={COLORS.reseda}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Cari resep... (min. 3 karakter)"
+            placeholderTextColor={COLORS.sage}
+            value={keyword}
+            onChangeText={setKeyword}
+            onSubmitEditing={handleSearch}
+          />
+        </View>
+        <TouchableOpacity style={styles.searchBtn} onPress={handleSearch}>
+          <MaterialCommunityIcons name="arrow-right" size={22} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <TouchableOpacity
-        style={styles.dropdown}
-        onPress={() => setShowCategoryModal(true)}
-      >
-        <Text>{selectedCategory || "Pilih Kategori"}</Text>
-      </TouchableOpacity>
+      <View style={styles.filterRow}>
+        <TouchableOpacity
+          style={[styles.dropdown, selectedCategory && styles.dropdownActive]}
+          onPress={() => setShowCategoryModal(true)}
+        >
+          <Text
+            style={[
+              styles.dropdownText,
+              selectedCategory && styles.dropdownTextActive,
+            ]}
+            numberOfLines={1}
+          >
+            {selectedCategory || "Kategori"}
+          </Text>
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={16}
+            color={selectedCategory ? "#fff" : COLORS.reseda}
+          />
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.dropdown}
-        onPress={() => setShowAreaModal(true)}
-      >
-        <Text>{selectedArea || "Pilih Negara Asal"}</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.dropdown, selectedArea && styles.dropdownActive]}
+          onPress={() => setShowAreaModal(true)}
+        >
+          <Text
+            style={[
+              styles.dropdownText,
+              selectedArea && styles.dropdownTextActive,
+            ]}
+            numberOfLines={1}
+          >
+            {selectedArea || "Negara"}
+          </Text>
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={16}
+            color={selectedArea ? "#fff" : COLORS.reseda}
+          />
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity style={styles.btn} onPress={handleSearch}>
-        <Text style={styles.btnText}>Cari</Text>
-      </TouchableOpacity>
+      {loading && (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={COLORS.ebony} />
+        </View>
+      )}
 
-      {searched && results.length === 0 && !loading && (
-        <Text style={styles.empty}>Resep tidak ditemukan</Text>
+      {searched && !loading && results.length === 0 && (
+        <View style={styles.center}>
+          <MaterialCommunityIcons
+            name="food-off-outline"
+            size={56}
+            color={COLORS.dun}
+          />
+          <Text style={styles.emptyText}>Resep tidak ditemukan</Text>
+        </View>
       )}
 
       <FlatList
         data={results}
         keyExtractor={(item) => item.idMeal}
+        contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.item}
+            style={styles.card}
             onPress={() =>
               navigation.navigate("Detail", { idMeal: item.idMeal })
             }
           >
-            <Text>{item.strMeal}</Text>
+            <Image
+              source={{ uri: item.strMealThumb }}
+              style={styles.cardImage}
+              resizeMode="cover"
+            />
+            <View style={styles.cardInfo}>
+              <Text style={styles.cardTitle} numberOfLines={2}>
+                {item.strMeal}
+              </Text>
+              <View style={styles.cardMeta}>
+                <MaterialCommunityIcons
+                  name="tag-outline"
+                  size={13}
+                  color={COLORS.reseda}
+                />
+                <Text style={styles.cardMetaText}>{item.strCategory}</Text>
+              </View>
+            </View>
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={20}
+              color={COLORS.reseda}
+            />
           </TouchableOpacity>
         )}
       />
@@ -118,24 +207,40 @@ export default function Search({ navigation }) {
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>Pilih Kategori</Text>
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
               <TouchableOpacity
+                style={styles.modalItem}
                 onPress={() => {
                   setSelectedCategory("");
                   setShowCategoryModal(false);
                 }}
               >
-                <Text style={styles.modalItem}>Semua Kategori</Text>
+                <Text style={styles.modalItemText}>Semua Kategori</Text>
+                {!selectedCategory && (
+                  <MaterialCommunityIcons
+                    name="check"
+                    size={18}
+                    color={COLORS.reseda}
+                  />
+                )}
               </TouchableOpacity>
               {categories.map((cat) => (
                 <TouchableOpacity
                   key={cat.idCategory}
+                  style={styles.modalItem}
                   onPress={() => {
                     setSelectedCategory(cat.strCategory);
                     setShowCategoryModal(false);
                   }}
                 >
-                  <Text style={styles.modalItem}>{cat.strCategory}</Text>
+                  <Text style={styles.modalItemText}>{cat.strCategory}</Text>
+                  {selectedCategory === cat.strCategory && (
+                    <MaterialCommunityIcons
+                      name="check"
+                      size={18}
+                      color={COLORS.reseda}
+                    />
+                  )}
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -147,24 +252,40 @@ export default function Search({ navigation }) {
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>Pilih Negara Asal</Text>
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
               <TouchableOpacity
+                style={styles.modalItem}
                 onPress={() => {
                   setSelectedArea("");
                   setShowAreaModal(false);
                 }}
               >
-                <Text style={styles.modalItem}>Semua Negara</Text>
+                <Text style={styles.modalItemText}>Semua Negara</Text>
+                {!selectedArea && (
+                  <MaterialCommunityIcons
+                    name="check"
+                    size={18}
+                    color={COLORS.reseda}
+                  />
+                )}
               </TouchableOpacity>
               {areas.map((area) => (
                 <TouchableOpacity
                   key={area.strArea}
+                  style={styles.modalItem}
                   onPress={() => {
                     setSelectedArea(area.strArea);
                     setShowAreaModal(false);
                   }}
                 >
-                  <Text style={styles.modalItem}>{area.strArea}</Text>
+                  <Text style={styles.modalItemText}>{area.strArea}</Text>
+                  {selectedArea === area.strArea && (
+                    <MaterialCommunityIcons
+                      name="check"
+                      size={18}
+                      color={COLORS.reseda}
+                    />
+                  )}
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -176,58 +297,180 @@ export default function Search({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#EBE3D2" },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.bone,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 56,
+    paddingBottom: 16,
+  },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#414833",
-    marginTop: 48,
-    marginBottom: 16,
+    fontSize: 32,
+    color: COLORS.ebony,
+    fontFamily: "PlayfairDisplay_700Bold",
+  },
+  subtitle: {
+    fontSize: 13,
+    color: COLORS.reseda,
+    fontFamily: "PTSerif_400Regular",
+    marginTop: 4,
+  },
+  searchRow: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    gap: 10,
+    marginBottom: 8,
+  },
+  inputWrap: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: COLORS.sage,
+    paddingHorizontal: 12,
+    gap: 8,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 8,
-    backgroundColor: "#fff",
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: COLORS.ebony,
+    fontFamily: "PTSerif_400Regular",
   },
-  error: { color: "red", fontSize: 12, marginBottom: 8 },
-  dropdown: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 8,
-    backgroundColor: "#fff",
-  },
-  btn: {
-    backgroundColor: "#737A5D",
-    padding: 12,
-    borderRadius: 8,
+  searchBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: COLORS.reseda,
+    justifyContent: "center",
     alignItems: "center",
+  },
+  error: {
+    fontSize: 12,
+    color: "#E8593C",
+    paddingHorizontal: 20,
+    marginBottom: 8,
+    fontFamily: "PTSerif_400Regular",
+  },
+  filterRow: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    gap: 10,
     marginBottom: 16,
   },
-  btnText: { color: "#fff", fontWeight: "600" },
-  empty: { textAlign: "center", color: "#737A5D", marginTop: 20 },
-  item: { padding: 12, borderBottomWidth: 1, borderBottomColor: "#ccc" },
+  dropdown: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: COLORS.sage,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    gap: 6,
+  },
+  dropdownActive: {
+    backgroundColor: COLORS.reseda,
+    borderColor: COLORS.reseda,
+  },
+  dropdownText: {
+    flex: 1,
+    fontSize: 13,
+    color: COLORS.reseda,
+    fontFamily: "PTSerif_400Regular",
+  },
+  dropdownTextActive: {
+    color: "#fff",
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+  },
+  emptyText: {
+    fontSize: 15,
+    color: COLORS.reseda,
+    fontFamily: "PTSerif_400Regular",
+  },
+  list: {
+    paddingHorizontal: 20,
+    paddingBottom: 100,
+    gap: 12,
+  },
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.bone,
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1.5,
+    borderColor: COLORS.reseda,
+    elevation: 3,
+    shadowColor: COLORS.ebony,
+    shadowOffset: { width: 2, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    paddingRight: 12,
+  },
+  cardImage: {
+    width: 90,
+    height: 90,
+  },
+  cardInfo: {
+    flex: 1,
+    paddingHorizontal: 14,
+    gap: 6,
+  },
+  cardTitle: {
+    fontSize: 14,
+    color: COLORS.ebony,
+    fontFamily: "PTSerif_700Bold",
+  },
+  cardMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  cardMetaText: {
+    fontSize: 12,
+    color: COLORS.reseda,
+    fontFamily: "PTSerif_400Regular",
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
   },
   modalBox: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
+    backgroundColor: COLORS.bone,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
     maxHeight: "60%",
   },
-  modalTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 12 },
+  modalTitle: {
+    fontSize: 18,
+    color: COLORS.ebony,
+    fontFamily: "PlayfairDisplay_700Bold",
+    marginBottom: 16,
+  },
   modalItem: {
-    paddingVertical: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: COLORS.sage,
+  },
+  modalItemText: {
     fontSize: 14,
+    color: COLORS.ebony,
+    fontFamily: "PTSerif_400Regular",
   },
 });
