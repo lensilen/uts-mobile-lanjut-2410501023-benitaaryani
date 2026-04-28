@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { getMealDetail, getRandomMeal } from "../services/api";
+import { useFavorites } from "../context/FavoritesContext";
 
 const COLORS = {
   ebony: "#414833",
@@ -27,7 +28,7 @@ export default function Detail({ navigation, route }) {
   const [meal, setMeal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const [activeTab, setActiveTab] = useState("ingredients");
   const scrollRef = useRef(null);
 
@@ -93,7 +94,11 @@ export default function Detail({ navigation, route }) {
             style={styles.backBtn}
             onPress={() => navigation.goBack()}
           >
-            <MaterialCommunityIcons name="arrow-left" size={24} color={COLORS.ebony} />
+            <MaterialCommunityIcons
+              name="arrow-left"
+              size={24}
+              color={COLORS.ebony}
+            />
           </TouchableOpacity>
         </View>
 
@@ -102,45 +107,78 @@ export default function Detail({ navigation, route }) {
             <Text style={styles.title}>{meal.strMeal}</Text>
             <TouchableOpacity
               style={styles.favoriteBtn}
-              onPress={() => setIsFavorite(!isFavorite)}
+              onPress={() => {
+                if (isFavorite(meal.idMeal)) {
+                  removeFavorite(meal);
+                } else {
+                  addFavorite(meal);
+                }
+              }}
             >
               <MaterialCommunityIcons
-                name={isFavorite ? "heart" : "heart-outline"}
+                name={isFavorite(meal.idMeal) ? "heart" : "heart-outline"}
                 size={26}
-                color={isFavorite ? "#E8593C" : COLORS.ebony}
+                color={isFavorite(meal.idMeal) ? "#E8593C" : COLORS.ebony}
               />
             </TouchableOpacity>
           </View>
 
           <View style={styles.metaRow}>
-            <MaterialCommunityIcons name="map-marker-outline" size={16} color={COLORS.reseda} />
+            <MaterialCommunityIcons
+              name="map-marker-outline"
+              size={16}
+              color={COLORS.reseda}
+            />
             <Text style={styles.metaText}>{meal.strArea}</Text>
             <View style={styles.metaDot} />
-            <MaterialCommunityIcons name="tag-outline" size={16} color={COLORS.reseda} />
+            <MaterialCommunityIcons
+              name="tag-outline"
+              size={16}
+              color={COLORS.reseda}
+            />
             <Text style={styles.metaText}>{meal.strCategory}</Text>
           </View>
 
           <View style={styles.tabRow}>
             <TouchableOpacity
-              style={[styles.tab, activeTab === "ingredients" && styles.tabActive]}
+              style={[
+                styles.tab,
+                activeTab === "ingredients" && styles.tabActive,
+              ]}
               onPress={() => {
                 setActiveTab("ingredients");
                 scrollRef.current?.scrollTo({ x: 0, animated: true });
               }}
             >
-              <Text style={[styles.tabText, activeTab === "ingredients" && styles.tabTextActive]}>
-                Ingredients
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "ingredients" && styles.tabTextActive,
+                ]}
+              >
+                Bahan-bahan
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.tab, activeTab === "instructions" && styles.tabActive]}
+              style={[
+                styles.tab,
+                activeTab === "instructions" && styles.tabActive,
+              ]}
               onPress={() => {
                 setActiveTab("instructions");
-                scrollRef.current?.scrollTo({ x: SCREEN_WIDTH - 40, animated: true });
+                scrollRef.current?.scrollTo({
+                  x: SCREEN_WIDTH - 40,
+                  animated: true,
+                });
               }}
             >
-              <Text style={[styles.tabText, activeTab === "instructions" && styles.tabTextActive]}>
-                Instructions
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "instructions" && styles.tabTextActive,
+                ]}
+              >
+                Cara Memasak
               </Text>
             </TouchableOpacity>
           </View>
@@ -153,7 +191,9 @@ export default function Detail({ navigation, route }) {
             scrollEventThrottle={16}
             onMomentumScrollEnd={(e) => {
               const x = e.nativeEvent.contentOffset.x;
-              setActiveTab(x > (SCREEN_WIDTH - 40) / 2 ? "instructions" : "ingredients");
+              setActiveTab(
+                x > (SCREEN_WIDTH - 40) / 2 ? "instructions" : "ingredients",
+              );
             }}
           >
             <View style={{ width: SCREEN_WIDTH - 40 }}>
@@ -287,8 +327,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   ingredientDot: {
-    width: 4,
-    height: 4,
+    width: 8,
+    height: 8,
     borderRadius: 4,
     backgroundColor: COLORS.reseda,
   },

@@ -8,6 +8,7 @@ import {
   PTSerif_400Regular,
   PTSerif_700Bold,
 } from "@expo-google-fonts/pt-serif";
+import { FavoritesProvider } from "./src/context/FavoritesContext";
 import AppNavigator from "./src/navigation/AppNavigator";
 
 export default function App() {
@@ -25,5 +26,9 @@ export default function App() {
     );
   }
 
-  return <AppNavigator />;
+  return (
+    <FavoritesProvider>
+      <AppNavigator />
+    </FavoritesProvider>
+  );
 }
