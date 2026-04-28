@@ -3,10 +3,24 @@ import {
   View,
   Text,
   FlatList,
+  Image,
   TouchableOpacity,
   StyleSheet,
+  Dimensions,
 } from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useFavorites } from "../context/FavoritesContext";
+
+const COLORS = {
+  ebony: "#414833",
+  reseda: "#737A5D",
+  sage: "#A4AC86",
+  dun: "#CCBFA3",
+  bone: "#EBE3D2",
+};
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
 
 export default function Favorites({ navigation }) {
   const { favorites, removeFavorite } = useFavorites();
@@ -14,26 +28,48 @@ export default function Favorites({ navigation }) {
   if (favorites.length === 0) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyText}>Belum ada favorit</Text>
+        <MaterialCommunityIcons name="heart-off-outline" size={64} color={COLORS.dun} />
+        <Text style={styles.emptyTitle}>Belum ada favorit</Text>
+        <Text style={styles.emptySubtitle}>
+          Tambahkan resep favoritmu dari halaman detail
+        </Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Favorit</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Favorit</Text>
+        <Text style={styles.headerSubtitle}>
+          {favorites.length} resep tersimpan
+        </Text>
+      </View>
+
       <FlatList
         data={favorites}
         keyExtractor={(item) => item.idMeal}
+        numColumns={2}
+        contentContainerStyle={styles.grid}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.item}
+            style={styles.card}
             onPress={() => navigation.navigate("Detail", { idMeal: item.idMeal })}
           >
-            <Text style={styles.itemText}>{item.strMeal}</Text>
-            <TouchableOpacity onPress={() => removeFavorite(item)}>
-              <Text style={styles.removeText}>Hapus</Text>
+            <Image
+              source={{ uri: item.strMealThumb }}
+              style={styles.cardImage}
+              resizeMode="cover"
+            />
+            <TouchableOpacity
+              style={styles.removeBtn}
+              onPress={() => removeFavorite(item)}
+            >
+              <MaterialCommunityIcons name="heart" size={20} color="#E8593C" />
             </TouchableOpacity>
+            <Text style={styles.cardLabel} numberOfLines={2}>
+              {item.strMeal}
+            </Text>
           </TouchableOpacity>
         )}
       />
@@ -44,42 +80,86 @@ export default function Favorites({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#EBE3D2",
-    padding: 16,
+    backgroundColor: COLORS.bone,
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#EBE3D2",
+    backgroundColor: COLORS.bone,
+    padding: 40,
+    gap: 12,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#414833",
-    marginTop: 48,
-    marginBottom: 16,
+  emptyTitle: {
+    fontSize: 18,
+    color: COLORS.ebony,
+    fontFamily: "PlayfairDisplay_700Bold",
   },
-  emptyText: {
-    fontSize: 16,
-    color: "#737A5D",
-  },
-  item: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 12,
-    marginBottom: 8,
-    backgroundColor: "#CCBFA3",
-    borderRadius: 8,
-  },
-  itemText: {
-    fontSize: 14,
-    color: "#414833",
-    flex: 1,
-  },
-  removeText: {
+  emptySubtitle: {
     fontSize: 13,
-    color: "#737A5D",
+    color: COLORS.reseda,
+    fontFamily: "PTSerif_400Regular",
+    textAlign: "center",
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 56,
+    paddingBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 32,
+    color: COLORS.ebony,
+    fontFamily: "PlayfairDisplay_700Bold",
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: COLORS.reseda,
+    fontFamily: "PTSerif_400Regular",
+    marginTop: 4,
+  },
+  grid: {
+    paddingHorizontal: 12,
+    paddingBottom: 100,
+  },
+  card: {
+    width: CARD_WIDTH,
+    margin: 8,
+    borderRadius: 16,
+    backgroundColor: COLORS.bone,
+    overflow: "hidden",
+    borderWidth: 1.5,
+    borderColor: COLORS.reseda,
+    elevation: 3,
+    shadowColor: COLORS.ebony,
+    shadowOffset: { width: 2, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  cardImage: {
+    width: "100%",
+    height: CARD_WIDTH * 0.85,
+  },
+  removeBtn: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.bone,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 4,
+  },
+  cardLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#fff",
+    fontFamily: "PTSerif_700Bold",
+    padding: 10,
+    backgroundColor: COLORS.reseda,
+    textAlign: "center",
+    height: 52,
+    textAlignVertical: "center",
   },
 });
