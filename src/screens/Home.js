@@ -75,7 +75,7 @@ export default function Home({ navigation }) {
       const data = await getCategories();
       setCategories(data);
     } catch (e) {
-      setError("Gagal memuat data. Coba lagi.");
+      setError("categories failed to load. Please try again.");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -112,7 +112,7 @@ export default function Home({ navigation }) {
       <View style={styles.center}>
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity style={styles.retryBtn} onPress={fetchCategories}>
-          <Text style={styles.retryText}>Coba Lagi</Text>
+          <Text style={styles.retryText}>Try Again</Text>
         </TouchableOpacity>
       </View>
     );
@@ -122,9 +122,8 @@ export default function Home({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.greeting}>Selamat datang di</Text>
           <Text style={styles.appName}>ResepKita</Text>
-          <Text style={styles.subtitle}>Eksplorasi cita rasa dari seluruh dunia</Text>
+          <Text style={styles.subtitle}>Explore Recipes from Around the World</Text>
         </View>
         <View style={styles.randomBtnWrap}>
           <Text style={styles.randomLabel}>
@@ -185,11 +184,6 @@ const styles = StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
-  },
-  greeting: {
-    fontSize: 14,
-    color: COLORS.reseda,
-    fontFamily: "PTSerif_400Regular",
   },
   appName: {
     fontSize: 42,

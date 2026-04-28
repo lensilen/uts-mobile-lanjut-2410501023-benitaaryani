@@ -28,11 +28,7 @@ export default function Favorites({ navigation }) {
   if (favorites.length === 0) {
     return (
       <View style={styles.center}>
-        <MaterialCommunityIcons name="heart-off-outline" size={64} color={COLORS.dun} />
-        <Text style={styles.emptyTitle}>Belum ada favorit</Text>
-        <Text style={styles.emptySubtitle}>
-          Tambahkan resep favoritmu dari halaman detail
-        </Text>
+        <Text style={styles.emptyTitle}>Add your favourite recipe now!</Text>
       </View>
     );
   }
@@ -40,9 +36,9 @@ export default function Favorites({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Favorit</Text>
+        <Text style={styles.headerTitle}>Favorites</Text>
         <Text style={styles.headerSubtitle}>
-          {favorites.length} resep tersimpan
+          {favorites.length} recipe
         </Text>
       </View>
 
@@ -94,12 +90,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: COLORS.ebony,
     fontFamily: "PlayfairDisplay_700Bold",
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    color: COLORS.reseda,
-    fontFamily: "PTSerif_400Regular",
-    textAlign: "center",
   },
   header: {
     paddingHorizontal: 20,

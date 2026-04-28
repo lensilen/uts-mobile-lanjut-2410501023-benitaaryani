@@ -38,7 +38,7 @@ export default function Detail({ navigation, route }) {
       const data = random ? await getRandomMeal() : await getMealDetail(idMeal);
       setMeal(data);
     } catch (e) {
-      setError("Gagal memuat resep. Coba lagi.");
+      setError("Failed to load meal details. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ export default function Detail({ navigation, route }) {
       <View style={styles.center}>
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity style={styles.retryBtn} onPress={fetchMeal}>
-          <Text style={styles.retryText}>Coba Lagi</Text>
+          <Text style={styles.retryText}>Try Again</Text>
         </TouchableOpacity>
       </View>
     );
@@ -156,7 +156,7 @@ export default function Detail({ navigation, route }) {
                   activeTab === "ingredients" && styles.tabTextActive,
                 ]}
               >
-                Bahan-bahan
+                Ingredients
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -178,7 +178,7 @@ export default function Detail({ navigation, route }) {
                   activeTab === "instructions" && styles.tabTextActive,
                 ]}
               >
-                Cara Memasak
+                Instructions
               </Text>
             </TouchableOpacity>
           </View>

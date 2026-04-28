@@ -49,11 +49,11 @@ export default function Search({ navigation }) {
 
   const handleSearch = async () => {
     if (!keyword.trim()) {
-      setError("Keyword tidak boleh kosong");
+      setError("Keyword cannot be empty");
       return;
     }
     if (keyword.trim().length < 3) {
-      setError("Keyword minimal 3 karakter");
+      setError("Keyword must be at least 3 characters");
       return;
     }
     setError("");
@@ -70,7 +70,7 @@ export default function Search({ navigation }) {
       }
       setResults(filtered);
     } catch (e) {
-      setError("Gagal mencari resep. Coba lagi.");
+      setError("Cannot fetch recipes. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -79,8 +79,8 @@ export default function Search({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Cari Resep</Text>
-        <Text style={styles.subtitle}>Temukan resep yang kamu inginkan</Text>
+        <Text style={styles.title}>Search</Text>
+        <Text style={styles.subtitle}>Find the recipes you want</Text>
       </View>
 
       <View style={styles.searchRow}>
@@ -92,7 +92,7 @@ export default function Search({ navigation }) {
           />
           <TextInput
             style={styles.input}
-            placeholder="Cari resep... (min. 3 karakter)"
+            placeholder="Search recipes... (min. 3 characters)"
             placeholderTextColor={COLORS.sage}
             value={keyword}
             onChangeText={setKeyword}
@@ -118,7 +118,7 @@ export default function Search({ navigation }) {
             ]}
             numberOfLines={1}
           >
-            {selectedCategory || "Kategori"}
+            {selectedCategory || "Category"}
           </Text>
           <MaterialCommunityIcons
             name="chevron-down"
@@ -138,7 +138,7 @@ export default function Search({ navigation }) {
             ]}
             numberOfLines={1}
           >
-            {selectedArea || "Negara"}
+            {selectedArea || "Origin Country"}
           </Text>
           <MaterialCommunityIcons
             name="chevron-down"
@@ -161,7 +161,7 @@ export default function Search({ navigation }) {
             size={56}
             color={COLORS.dun}
           />
-          <Text style={styles.emptyText}>Resep tidak ditemukan</Text>
+          <Text style={styles.emptyText}>Recipes not found</Text>
         </View>
       )}
 
@@ -206,7 +206,7 @@ export default function Search({ navigation }) {
       <Modal visible={showCategoryModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Pilih Kategori</Text>
+            <Text style={styles.modalTitle}>Select Category</Text>
             <ScrollView showsVerticalScrollIndicator={false}>
               <TouchableOpacity
                 style={styles.modalItem}
@@ -215,7 +215,7 @@ export default function Search({ navigation }) {
                   setShowCategoryModal(false);
                 }}
               >
-                <Text style={styles.modalItemText}>Semua Kategori</Text>
+                <Text style={styles.modalItemText}>All Categories</Text>
                 {!selectedCategory && (
                   <MaterialCommunityIcons
                     name="check"
@@ -251,7 +251,7 @@ export default function Search({ navigation }) {
       <Modal visible={showAreaModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Pilih Negara Asal</Text>
+            <Text style={styles.modalTitle}>Select Origin Country</Text>
             <ScrollView showsVerticalScrollIndicator={false}>
               <TouchableOpacity
                 style={styles.modalItem}
@@ -260,7 +260,7 @@ export default function Search({ navigation }) {
                   setShowAreaModal(false);
                 }}
               >
-                <Text style={styles.modalItemText}>Semua Negara</Text>
+                <Text style={styles.modalItemText}>All Countries</Text>
                 {!selectedArea && (
                   <MaterialCommunityIcons
                     name="check"
