@@ -327,8 +327,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   ingredientDot: {
-    width: 8,
-    height: 8,
+    width: 4,
+    height: 4,
     borderRadius: 4,
     backgroundColor: COLORS.reseda,
   },

@@ -29,7 +29,7 @@ export default function About() {
         />
         <Text style={styles.value}>Benita Aryani</Text>
         <Text style={styles.value}>2410501023</Text>
-        <Text style={styles.value}>Kelas A</Text>
+        <Text style={styles.value}>Kelas B</Text>
 
         <View style={styles.divider} />
 
